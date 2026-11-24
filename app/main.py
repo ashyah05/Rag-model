@@ -28,7 +28,7 @@ TOP_K = 3
 # Initialize FastAPI
 app = FastAPI(
     title="RAG Model API",
-    description="Retrieval Augmented Generation using FAISS and Google Gemini",
+    description="RAG Model - Automated CI/CD Testing",
     version="1.0.0"
 )
 
