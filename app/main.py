@@ -1,11 +1,11 @@
-
 import os
 from pathlib import Path
 
 import faiss
 import numpy as np
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
+import secrets
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pypdf import PdfReader
@@ -15,6 +15,23 @@ from google import genai
 
 # Load environment variables from .env
 load_dotenv()
+RAG_ACCESS_CODE = os.getenv("RAG_ACCESS_CODE")
+
+
+def verify_access_code(x_access_code: str = Header(...)):
+    if not RAG_ACCESS_CODE:
+        raise HTTPException(
+            status_code=503,
+            detail="Access code is not configured"
+        )
+
+    if not secrets.compare_digest(x_access_code, RAG_ACCESS_CODE):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid access code"
+        )
+
+    return True
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
@@ -272,7 +289,10 @@ def home():
 
 # RAG POST API
 @app.post("/ask")
-def ask_question(request: QueryRequest):
+def ask_question(
+    request: QueryRequest,
+    authorized: bool = Depends(verify_access_code)
+):
 
     global faiss_index
 

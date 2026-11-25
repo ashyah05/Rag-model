@@ -4,9 +4,12 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+RUN pip install --no-cache-dir --retries 10 --timeout 120 -r requirements.txt
 
 COPY app ./app
+
 COPY documents ./documents
 
 EXPOSE 8003
